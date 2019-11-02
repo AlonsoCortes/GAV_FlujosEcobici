@@ -1,201 +1,95 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<title>Flujos Ecobici - Septiembre </title>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css"/>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
 
-<link rel="stylesheet" href="https://d19vzq90twjlae.cloudfront.net/leaflet-0.7.3/leaflet.css" />
+  </head>
+  <body>
+    <h1>EcoBici CDMX - Flujo total entre estaciones - Septiembre 2019</h1>
+    <div id="map" style="width: 800px; height: 600px"></div>
 
-<style>
-body {
-  position: absolute;
-  width:100%;
-  height: 100%;
-  margin: 0px;
-  font-family: sans-serif;
-}
-#map {
-  top:0px;
-  left:0px;
-  right:0px;
-  height: 100%;
-}
-path {
-  fill: none;
-  stroke: #4682B4;
-  stroke-opacity: 0.6;
-  stroke-linecap: round;
-  cursor: pointer;
-}
-path:hover {
-  stroke-opacity: 0.8;
-  stroke: #315B7E;
-}
-.curvesettings {
-  position: absolute;
-  right: 10px;
-  top:6px;
-}
-.box {
-  border: 1px solid #EEE;
-  margin: 3px;
-  padding: 5px;
-  background-color: white;
-  font-family: sans-serif;
-  font-size: 12px;
-}
-.title {
-  font-weight: 600;
-}
-.source {
-  position: absolute;
-  width: 50%;
-  top: 6px;
-  left: 50px;
-}
-</style>
-
-<body>
-  <div id="map"></div>
-  <form class="curvesettings">
-  <div class="box">
-    <div class="title">Curve settings</div>
-    <div>Hover over nodes<br> to see links.</div>
-    <div>Change styles using<br> radio buttons.</div>
-  </div>
-
-    <div class="box">
-      <div class="title">Curve shape</div>
-      <input type="radio" name="use_arcs" value="0" checked>Beziers<br>
-      <input type="radio" name="use_arcs" value="1">Arcs<br>
-    </div>
-    <div class="box">
-    <div class="title">Flip at horizontal axis</div>
-    <input type="radio" name="flip" value="1" checked>Flip<br>
-    <input type="radio" name="flip" value="0">NoFlip<br>
-    </div>
-    <div class="box">
-    <div class="title">Set curve steepness X</div>
-    <div>(bezier control point)</div>
-    <input type="radio" name="xshift" value="0.1">xshift 0.1<br>
-    <input type="radio" name="xshift" value="0.4" checked>xshift 0.4<br>
-    <input type="radio" name="xshift" value="0.8">xshift 0.8<br>
-    <input type="radio" name="xshift" value="1.6">xshift 1.6<br>
-    </div>
-    <div class="box">
-    <div class="title">Set curve steepness Y</div>
-    <div>(bezier control point)</div>
-    <input type="radio" name="yshift" value="0.1" checked>yshift 0.1<br>
-    <input type="radio" name="yshift" value="0.4">yshift 0.4<br>
-    <input type="radio" name="yshift" value="0.8">yshift 0.8<br>
-    <input type="radio" name="yshift" value="1.6">yshift 1.6<br>
-    </div>
-  </form>
-  <div class="source box">
-    <div class="title">Flujos entre estaciones del sistema Ecobici</div>
-    Este grafo muestra la cantidad total de viajes desde una estación a otras en el mes de septiembre de 2019
-  </div>
-</body>
-
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<script src="https://d19vzq90twjlae.cloudfront.net/leaflet-0.7.3/leaflet.js"></script>
-<script src="https://rawgit.com/geodesign/spatialsankey/master/spatialsankey.js"></script>
-<script type="text/javascript">
-
-// Set leaflet map
-var map = new L.map('map', {
-          center: new L.LatLng(19.413637, -99.162687),
-          zoom: 14,
-          layers: [
-            new L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-              attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-			'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
-            })
-          ]
-        });
- 
-// Initialize the SVG layer
-map._initPathRoot()
-
-// Setup svg element to work with
-var svg = d3.select("#map").select("svg"),
-    linklayer = svg.append("g"),
-    nodelayer = svg.append("g");
-
-// Load data asynchronosuly
-d3.json("estaciones_ecobici_join.json", function(nodes) {
-  d3.csv("viajes_estacion.csv", function(links) {
-
-    // Setup spatialsankey object
-    var spatialsankey = d3.spatialsankey()
-                            .lmap(map)
-                            .nodes(nodes.features)
-                            .links(links);
-    
-    var mouseover = function(d){
-      // Get link data for this node
-      var nodelinks = spatialsankey.links().filter(function(link){
-        return link.Ciclo_Estacion_Arribo == d.estacion;
-      });
-
-      // Add data to link layer
-      var beziers = linklayer.selectAll("path").data(nodelinks);
-      link = spatialsankey.link(options);
-
-      // Draw new links
-      beziers.enter()
-        .append("path")
-        .attr("d", link)
-        .attr('id', function(d){return d.id})
-        .style("stroke-width", spatialsankey.link().width());
-      
-      // Remove old links
-      beziers.exit().remove();
-
-      // Hide inactive nodes
-      var circleUnderMouse = this;
-      circs.transition().style('opacity',function () {
-          return (this === circleUnderMouse) ? 0.7 : 0;
-      });
-    };
-
-    var mouseout = function(d) {
-      // Remove links
-      linklayer.selectAll("path").remove();
-      // Show all nodes
-      circs.transition().style('opacity', 0.7);
-    };
-
-    // Draw nodes
-    var node = spatialsankey.node()
-    var circs = nodelayer.selectAll("circle")
-      .data(spatialsankey.nodes())
-      .enter()
-      .append("circle")
-      .attr("cx", node.cx)
-      .attr("cy", node.cy)
-      .attr("r", node.r)
-      .style("fill", node.fill)
-      .attr("opacity", 0.7)
-      .on('mouseover', mouseover)
-      .on('mouseout', mouseout);
-    
-    // Adopt size of drawn objects after leaflet zoom reset
-    var zoomend = function(){
-        linklayer.selectAll("path").attr("d", spatialsankey.link());
-
-        circs.attr("cx", node.cx)
-             .attr("cy", node.cy);
-    };
- 
-    map.on("zoomend", zoomend);
-  });
-});
-var options = {'use_arcs': false, 'flip': false};
-d3.selectAll("input").forEach(function(x){
-  options[x.name] = parseFloat(x.value);
-})
-
-d3.selectAll("input").on("click", function(){
-  options[this.name] = parseFloat(this.value);
-});
-</script>
+	<script type="text/javascript">
+		var ecobici = [99.1666578, -19.4154301]
+        var map = L.map('map').setView(ecobici, 13);
+		estaciones = <%-JSON.stringify(estaciones)%>;
+		tramos = <%-JSON.stringify(tramos)%>;
+  //       var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+		// 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+		// 	subdomains: 'abcd',
+		// 	maxZoom: 19
+		// });
+		// // https: also suppported.
+		// // var Thunderforest_Pioneer = L.tileLayer('http://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png', {
+		// // 	attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+		// // });
+		// // var Stamen_Watercolor = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+		// // 	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+		// // 	subdomains: 'abcd',
+		// // 	minZoom: 1,
+		// // 	maxZoom: 16,
+		// // 	ext: 'png'
+		// // });
+		var Hydda_Full = L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+			attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+		});
+        Hydda_Full.addTo(map);
+		var freqcolor = d3.scale.linear()
+    		.domain([0, 10000])
+    		.range(["white", "green"]);
+    	var freqopacity = d3.scale.linear()
+    		.domain([0, 10000])
+    		.range([0, 1]);
+  //   	var timecolor = d3.scale.linear()
+  //   		.domain([0, 80])
+  //   		.range(["gold", "white"]);
+  //   	var timeopacity = d3.scale.linear()
+  //   		.domain([0, 80])
+  //   		.range([0.5, 1])
+    	var size = d3.scale.linear()
+    		.domain([9500,82794])
+    		.range([10, 30])
+		 L.geoJson(tramos,{
+			    style: function (feature) {
+			    		return {
+			    			color: freqcolor(feature.properties.f6),
+			    			opacity: freqopacity(feature.properties.f6),
+			    			className: 'tramo estacion' + feature.properties.f1
+			    			};			        
+			    }
+			}
+		 	).addTo(map);
+  // 		var emarker = L.icon({
+		//     iconUrl: '/images/marker.png',
+		//     iconSize:     [20,20], // size of the icon
+		//     iconAnchor:   [10, 10], // point of the icon which will correspond to marker's location
+		//     popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
+		// });
+  		// L.geoJson(estaciones,{
+    // 		pointToLayer: function (feature, latlng) {
+    //         	return L.marker(latlng, {icon: emarker });
+    //     	}
+    // 	}).addTo(map)
+    	L.geoJson(estaciones,{
+    		pointToLayer: function (feature, latlng) {
+            	return L.marker(latlng, {icon: L.icon({
+							    iconUrl: '/images/marker.png',
+							    iconSize:     [size(feature.properties.f3),size(feature.properties.f3)], // size of the icon
+							    iconAnchor:   [0, 0], // point of the icon which will correspond to marker's location
+							    popupAnchor:  [0, 0] // point from which the popup should open relative to the iconAnchor
+							})
+		 				});
+        	}
+    	}).addTo(map).on('click', function(e){
+    		$('.tramo').hide();
+    		$('.estacion'+e.layer.feature.properties.f2).show().attr('stroke-opacity',1);
+    	});
+		
+		
+	</script>
+  </body>
+</html>
