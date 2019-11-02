@@ -134,7 +134,7 @@ d3.json("estaciones_ecobici_join.geojson", function(nodes) {
     var mouseover = function(d){
       // Get link data for this node
       var nodelinks = spatialsankey.links().filter(function(link){
-        return link.source == d.id;
+        return link.Ciclo_Estacion_Arribo == d.estacion;
       });
 
       // Add data to link layer
