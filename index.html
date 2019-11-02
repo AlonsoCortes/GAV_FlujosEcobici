@@ -122,7 +122,7 @@ var svg = d3.select("#map").select("svg"),
     nodelayer = svg.append("g");
 
 // Load data asynchronosuly
-d3.json("estaciones_ecobici_join.geojson", function(nodes) {
+d3.json("estaciones_ecobici_join.json", function(nodes) {
   d3.csv("viajes_estacion.csv", function(links) {
 
     // Setup spatialsankey object
