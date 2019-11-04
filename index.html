@@ -142,7 +142,6 @@ d3.json("nodes.geojson", function(nodes) {
 	link = spatialsankey.link();
 	var beziers = linklayer.selectAll("path")
                        .data(nodelinks);
-                       .enter()
                        .append("path")
                        .attr("d", link)
                        .attr('id', function(d){return d.id})
