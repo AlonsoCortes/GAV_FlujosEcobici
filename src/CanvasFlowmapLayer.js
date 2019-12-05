@@ -29,15 +29,15 @@
       // developers will most likely need to provide this
       // options object with values unique to their data
       originAndDestinationFieldIds: {
-        originUniqueIdField: 'Ciclo_Estacion_Retiro',
+        originUniqueIdField: 'est_retiro',
         originGeometry: {
-          x: 'retiro_x',
-          y: 'retiro_y'
+          x: 'x_retiro',
+          y: 'y_retiro'
         },
-        destinationUniqueIdField: 'Ciclo_Estacion_Arribo',
+        destinationUniqueIdField: 'est_arribo',
         destinationGeometry: {
-          x: 'arribo_x',
-          y: 'arribo_y'
+          x: 'x_arribo',
+          y: 'y_arribo'
         }
       },
 
@@ -45,8 +45,9 @@
         type: 'simple',
         symbol: {
           // use canvas styling options (compare to CircleMarker styling below)
+		  // estilo de las líneas de flujo
           strokeStyle: 'rgba(0, 247, 255, 0.8)',
-          lineWidth: 0.75,
+		            lineWidth: 0.75,
           lineCap: 'round',
           shadowColor: 'rgb(0, 128, 132)',
           shadowBlur: 1.5
@@ -95,20 +96,20 @@
         if (geoJsonFeature.properties.isOrigin) {
           return {
             renderer: canvasRenderer, // recommended to use L.canvas()
-            radius: 5,
+            radius: 3,
             weight: 1,
-            color: 'rgb(255, 255, 255)',
-            fillColor: 'rgba(195, 255, 62, 0.6)',
+            color: 'rgba(36, 168, 166,0.6)',
+            fillColor: 'rgba(36, 168, 166,, 0.6)',
             fillOpacity: 0.6
           };
         } else {
           return {
             renderer: canvasRenderer,
-            radius: 2.5,
+            radius: 1.5,
             weight: 0.25,
-            color: 'rgb(17, 142, 170)',
-            fillColor: 'rgb(17, 142, 170)',
-            fillOpacity: 0.7
+            color: 'rgb(193, 245, 255)',
+            fillColor: 'rgb(193, 245, 255)',
+            fillOpacity: 0.8
           };
         }
       }
